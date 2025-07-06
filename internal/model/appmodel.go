@@ -2,37 +2,73 @@ package model
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
-	"goAiBasicStudio/internal/util"
 )
 
+type currentView int
+
+const (
+	HomeView currentView = iota
+	ModelListView
+)
+
+type showModelListMsg struct{}
+
 type app struct {
-	spinner loadingModel
+	view      currentView
+	home      home
+	modelList newModelList
 }
 
-func New() *app {
+func NewApp() *app {
 	return &app{
-		spinner: newLoadingModel(),
+		view: HomeView,
+		home: NewHomeModel(),
 	}
 }
 
 func (m *app) Init() tea.Cmd {
-	return m.spinner.Init()
+	return m.home.Init()
 }
 
 func (m *app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
 	switch msg := msg.(type) {
+
+	case showModelListMsg:
+		m.view = ModelListView
+		m.modelList = NewModelList()
+		return m, m.modelList.Init()
+
 	case tea.KeyMsg:
-		switch msg.String() {
-		case util.Quit, util.QuitC:
+		if msg.String() == "esc" && m.view == ModelListView {
+			m.view = HomeView
+			return m, nil
+		}
+		if msg.String() == "ctrl+c" || msg.String() == "q" {
 			return m, tea.Quit
 		}
 	}
-	m.spinner, cmd = m.spinner.Update(msg)
-	return m, cmd
+
+	switch m.view {
+	case HomeView:
+		var cmd tea.Cmd
+		m.home, cmd = m.home.Update(msg)
+		return m, cmd
+	case ModelListView:
+		var cmd tea.Cmd
+		m.modelList, cmd = m.modelList.Update(msg)
+		return m, cmd
+	}
+
+	return m, nil
 }
 
 func (m *app) View() string {
-	var show = "Getting connection to Ollama Api..." + m.spinner.spinner.View()
-	return show
+	switch m.view {
+	case HomeView:
+		return m.home.View()
+	case ModelListView:
+		return m.modelList.View()
+	default:
+		return "Vista desconocida"
+	}
 }

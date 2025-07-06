@@ -1,5 +1,6 @@
 package util
 
 const (
-	Ollama = "ollama"
+	Ollama   = "ollama"
+	Justfile = "just"
 )
