@@ -64,10 +64,10 @@ func (m *newModelList) Update(msg tea.Msg) (newModelList, tea.Cmd) {
 }
 
 func (m newModelList) View() string {
-	s := "Selecciona un modelo:\n\n"
+	s := "Select a model:\n\n"
 
 	if len(m.options) == 0 {
-		s += "Cargando modelos...\n"
+		s += "Loading models...\n"
 	} else {
 		for i, choice := range m.options {
 			cursor := " "
@@ -84,6 +84,6 @@ func (m newModelList) View() string {
 		}
 	}
 
-	s += "\nUsa ↑/↓ para navegar, [Enter] para seleccionar, q para salir.\n"
+	s += "\nUse ↑/↓ to navigate, [Enter] to select, q to quit.\n"
 	return s
 }

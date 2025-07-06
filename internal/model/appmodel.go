@@ -69,6 +69,6 @@ func (m *app) View() string {
 	case ModelListView:
 		return m.modelList.View()
 	default:
-		return "Vista desconocida"
+		return "Unknown view"
 	}
 }
