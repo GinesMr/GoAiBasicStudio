@@ -36,13 +36,12 @@ func (model loadingModel) Init() tea.Cmd {
 
 func (model *loadingModel) Update(msg tea.Msg) (loadingModel, tea.Cmd) {
 	var cmd tea.Cmd
-
 	switch msg := msg.(type) {
 	case service.OllamaFoundMsg:
 		if msg {
-			model.status = "✅ Ollama is installed"
+			model.status = "Ollama is installed"
 		} else {
-			model.status = "❌ Ollama is not installed Aborting..."
+			model.status = "Ollama is not installed Aborting..."
 			return *model, tea.Quit
 		}
 		model.checking = false

@@ -1,32 +1,47 @@
 package model
 
 import (
-	"fmt"
-
+	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"goAiBasicStudio/internal/service"
 )
 
-type modelsLoadedMsg []string
+var docStyle = lipgloss.NewStyle().Margin(1, 2)
+
+type item string
+
+func (i item) Title() string       { return string(i) }
+func (i item) Description() string { return "" }
+func (i item) FilterValue() string { return string(i) }
+
+type modelsLoadedMsg []item
 
 func ListOllamaWebModelsCmd() tea.Cmd {
 	return func() tea.Msg {
-		models := service.ListOllamaWebModels()
-		return modelsLoadedMsg(models)
+		strModels := service.ListOllamaWebModels()
+		items := make([]item, len(strModels))
+		for i, model := range strModels {
+			items[i] = item(model)
+		}
+		return modelsLoadedMsg(items)
 	}
 }
 
 type newModelList struct {
-	cursor   int
-	options  []string
-	selected int
+	list     list.Model
+	selected item
+	loaded   bool
 }
 
 func NewModelList() newModelList {
+	items := []list.Item{}
+	const defaultWidth = 60
+	const defaultHeight = 50
+	l := list.New(items, list.NewDefaultDelegate(), defaultWidth, defaultHeight)
+	l.Title = "Available Models"
 	return newModelList{
-		cursor:   0,
-		options:  []string{},
-		selected: -1,
+		list: l,
 	}
 }
 
@@ -34,56 +49,42 @@ func (m newModelList) Init() tea.Cmd {
 	return ListOllamaWebModelsCmd()
 }
 
-func (m *newModelList) Update(msg tea.Msg) (newModelList, tea.Cmd) {
+func (m newModelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+
 	case modelsLoadedMsg:
-		m.options = msg
-		m.cursor = 0
-		m.selected = -1
-		return *m, nil
+		items := make([]list.Item, len(msg))
+		for i, v := range msg {
+			items[i] = v
+		}
+		m.list.SetItems(items)
+		m.loaded = true
+		return m, nil
 
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
-			return *m, tea.Quit
-		case "up", "k":
-			if m.cursor > 0 {
-				m.cursor--
+		case "enter":
+			if selectedItem, ok := m.list.SelectedItem().(item); ok {
+				m.selected = selectedItem
+				service.InstallNewModel(string(selectedItem))
+				return m, tea.Quit
 			}
-		case "down", "j":
-			if m.cursor < len(m.options)-1 {
-				m.cursor++
-			}
-		case "enter", " ":
-			m.selected = m.cursor
-			fmt.Printf("Has seleccionado el modelo: %s\n", m.options[m.selected])
-			return *m, tea.Quit
+		case "q":
+			return m, tea.Quit
 		}
+
+	case tea.WindowSizeMsg:
+		m.list.SetSize(msg.Width, msg.Height-2)
 	}
-	return *m, nil
+
+	var cmd tea.Cmd
+	m.list, cmd = m.list.Update(msg)
+	return m, cmd
 }
 
 func (m newModelList) View() string {
-	s := "Select a model:\n\n"
-
-	if len(m.options) == 0 {
-		s += "Loading models...\n"
-	} else {
-		for i, choice := range m.options {
-			cursor := " "
-			if m.cursor == i {
-				cursor = ">"
-			}
-
-			checked := " "
-			if i == m.selected {
-				checked = "x"
-			}
-
-			s += fmt.Sprintf("%s [%s] %s\n", cursor, checked, choice)
-		}
+	if !m.loaded {
+		return "Getting models..\n"
 	}
-
-	s += "\nUse ↑/↓ to navigate, [Enter] to select, q to quit.\n"
-	return s
+	return lipgloss.NewStyle().Margin(1, 2).Render(m.list.View())
 }

@@ -30,18 +30,15 @@ func CheckOllamaInstallCmd() tea.Cmd {
 		return OllamaFoundMsg(false)
 	}
 }
-
 func ListOllamaWebModels() []string {
 	cmd := exec.Command(util.Justfile, "models")
-	msg, err := cmd.Output()
+	out, err := cmd.Output()
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println("Error  models:", err)
 		return nil
 	}
-	models := parseModels(msg)
-	for _, model := range models {
-		fmt.Println(model)
-	}
+	output := string(out)
+	models := parseModels(output)
 	return models
 }
 

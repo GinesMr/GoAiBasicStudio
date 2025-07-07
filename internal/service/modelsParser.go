@@ -1,14 +1,13 @@
 package service
 
-import "strings"
+import (
+	"strings"
+)
 
-func parseModels(output []byte) []string {
-
-	//TODO: Check if the output is empty or contains only whitespace
-	parts := string(output)
-	if parts == "" {
+func parseModels(output string) []string {
+	if output == "" {
 		return nil
 	}
-	lines := strings.Split(parts, "\n")
+	lines := strings.Split(output, "\n")
 	return lines
 }

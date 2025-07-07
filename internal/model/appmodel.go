@@ -47,15 +47,16 @@ func (m *app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	}
-
 	switch m.view {
 	case HomeView:
 		var cmd tea.Cmd
 		m.home, cmd = m.home.Update(msg)
 		return m, cmd
+
 	case ModelListView:
 		var cmd tea.Cmd
-		m.modelList, cmd = m.modelList.Update(msg)
+		updatedModel, cmd := m.modelList.Update(msg)
+		m.modelList = updatedModel.(newModelList)
 		return m, cmd
 	}
 
