@@ -2,7 +2,7 @@ package model
 
 import (
 	"fmt"
-	"goAiBasicStudio/internal/service"
+	"goAiBasicStudio/internal/services"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -13,7 +13,7 @@ type markdownRenderedMsg string
 
 func loadMarkdownCmd(md string) tea.Cmd {
 	return func() tea.Msg {
-		rendered, err := service.MarkdownToHTML(md)
+		rendered, err := services.MarkdownToHTML(md)
 		if err != nil {
 			rendered = "Error rendering markdown: " + err.Error()
 		}
@@ -74,10 +74,14 @@ func (m *home) Update(msg tea.Msg) (home, tea.Cmd) {
 		case "enter", " ":
 			if m.outputText == "" {
 				m.selected = m.cursor
-
 				if m.selected == 2 {
 					return *m, func() tea.Msg {
 						return showModelListMsg{}
+					}
+				}
+				if m.selected == 1 {
+					return *m, func() tea.Msg {
+						return showModelLocalListMsg{}
 					}
 				}
 				if m.selected == 3 {

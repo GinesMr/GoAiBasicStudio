@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"goAiBasicStudio/internal/service"
+	"goAiBasicStudio/internal/services"
 )
 
 type loadingModel struct {
@@ -30,14 +30,14 @@ func NewLoadingModel() loadingModel {
 func (model loadingModel) Init() tea.Cmd {
 	return tea.Batch(
 		model.spinner.Tick,
-		service.CheckOllamaInstallCmd(),
+		services.CheckOllamaInstallCmd(),
 	)
 }
 
 func (model *loadingModel) Update(msg tea.Msg) (loadingModel, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
-	case service.OllamaFoundMsg:
+	case services.OllamaFoundMsg:
 		if msg {
 			model.status = "Ollama is installed"
 		} else {

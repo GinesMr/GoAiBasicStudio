@@ -7,49 +7,47 @@ import (
 	"goAiBasicStudio/internal/services"
 )
 
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
+type model string
 
-type item string
+func (i model) Title() string       { return string(i) }
+func (i model) Description() string { return "" }
+func (i model) FilterValue() string { return string(i) }
 
-func (i item) Title() string       { return string(i) }
-func (i item) Description() string { return "" }
-func (i item) FilterValue() string { return string(i) }
+type modelsListLocalLoadedMsg []item
 
-type modelsLoadedMsg []item
-
-func ListOllamaWebModelsCmd() tea.Cmd {
+func ListOllamaLocalModelsCmd() tea.Cmd {
 	return func() tea.Msg {
-		strModels := services.ListOllamaWebModels()
+		strModels := services.ListOllamaLocalModels()
 		items := make([]item, len(strModels))
 		for i, model := range strModels {
 			items[i] = item(model)
 		}
-		return modelsLoadedMsg(items)
+		return modelsListLocalLoadedMsg(items)
 	}
 }
 
-type newModelList struct {
+type newModelLocalList struct {
 	list     list.Model
 	selected item
 	loaded   bool
 }
 
-func NewModelList() newModelList {
+func NewModelLocalList() newModelLocalList {
 	items := []list.Item{}
 	const defaultWidth = 60
 	const defaultHeight = 50
 	l := list.New(items, list.NewDefaultDelegate(), defaultWidth, defaultHeight)
-	l.Title = "Available Models"
-	return newModelList{
+	l.Title = "Available local Models"
+	return newModelLocalList{
 		list: l,
 	}
 }
 
-func (m newModelList) Init() tea.Cmd {
-	return ListOllamaWebModelsCmd()
+func (m newModelLocalList) Init() tea.Cmd {
+	return ListOllamaLocalModelsCmd()
 }
 
-func (m newModelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m newModelLocalList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case modelsLoadedMsg:
@@ -82,7 +80,7 @@ func (m newModelList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 
-func (m newModelList) View() string {
+func (m newModelLocalList) View() string {
 	if !m.loaded {
 		return "Getting models..\n"
 	}

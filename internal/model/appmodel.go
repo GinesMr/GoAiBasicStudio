@@ -9,20 +9,25 @@ type currentView int
 const (
 	HomeView currentView = iota
 	ModelListView
+	ModelLocalListView
 )
 
 type showModelListMsg struct{}
+type showModelLocalListMsg struct{}
 
 type app struct {
-	view      currentView
-	home      home
-	modelList newModelList
+	view           currentView
+	home           home
+	modelList      newModelList
+	modelLocalList newModelLocalList
 }
 
 func NewApp() *app {
 	return &app{
-		view: HomeView,
-		home: NewHomeModel(),
+		view:           HomeView,
+		home:           NewHomeModel(),
+		modelList:      NewModelList(),
+		modelLocalList: NewModelLocalList(),
 	}
 }
 
@@ -37,6 +42,11 @@ func (m *app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.view = ModelListView
 		m.modelList = NewModelList()
 		return m, m.modelList.Init()
+
+	case showModelLocalListMsg:
+		m.view = ModelLocalListView
+		m.modelLocalList = NewModelLocalList()
+		return m, m.modelLocalList.Init()
 
 	case tea.KeyMsg:
 		if msg.String() == "esc" && m.view == ModelListView {
@@ -58,6 +68,12 @@ func (m *app) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		updatedModel, cmd := m.modelList.Update(msg)
 		m.modelList = updatedModel.(newModelList)
 		return m, cmd
+
+	case ModelLocalListView:
+		var cmd tea.Cmd
+		updatedModel, cmd := m.modelLocalList.Update(msg)
+		m.modelLocalList = updatedModel.(newModelLocalList)
+		return m, cmd
 	}
 
 	return m, nil
@@ -69,6 +85,8 @@ func (m *app) View() string {
 		return m.home.View()
 	case ModelListView:
 		return m.modelList.View()
+	case ModelLocalListView:
+		return m.modelLocalList.View()
 	default:
 		return "Unknown view"
 	}

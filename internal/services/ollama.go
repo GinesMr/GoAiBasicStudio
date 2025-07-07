@@ -1,4 +1,4 @@
-package service
+package services
 
 import (
 	"fmt"
@@ -38,7 +38,18 @@ func ListOllamaWebModels() []string {
 		return nil
 	}
 	output := string(out)
-	models := parseModels(output)
+	models := parseWebModels(output)
+	return models
+}
+func ListOllamaLocalModels() []string {
+	cmd := exec.Command(util.Ollama, "list")
+	out, err := cmd.Output()
+	if err != nil {
+		fmt.Println("Error  getting local models:", err)
+		return nil
+	}
+	output := string(out)
+	models := parseOllamaLocalList(output)
 	return models
 }
 
