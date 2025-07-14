@@ -50,7 +50,7 @@ func (m newModelLocalList) Init() tea.Cmd {
 func (m newModelLocalList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
-	case modelsLoadedMsg:
+	case modelsListLocalLoadedMsg:
 		items := make([]list.Item, len(msg))
 		for i, v := range msg {
 			items[i] = v
@@ -64,7 +64,7 @@ func (m newModelLocalList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if selectedItem, ok := m.list.SelectedItem().(item); ok {
 				m.selected = selectedItem
-				services.InstallNewModel(string(selectedItem))
+				services.UseSelectedModel(string(selectedItem))
 				return m, tea.Quit
 			}
 		case "q":
@@ -74,7 +74,6 @@ func (m newModelLocalList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.list.SetSize(msg.Width, msg.Height-2)
 	}
-
 	var cmd tea.Cmd
 	m.list, cmd = m.list.Update(msg)
 	return m, cmd

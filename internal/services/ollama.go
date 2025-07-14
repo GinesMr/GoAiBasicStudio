@@ -42,15 +42,15 @@ func ListOllamaWebModels() []string {
 	return models
 }
 func ListOllamaLocalModels() []string {
-	cmd := exec.Command(util.Ollama, "list")
+	cmd := exec.Command("sh", "-c", "ollama list | awk 'NR>1 {print $1}'")
 	out, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error  getting local models:", err)
 		return nil
 	}
 	output := string(out)
-	models := parseOllamaLocalList(output)
-	return models
+	localmodels := parseOllamaLocalList(output)
+	return localmodels
 }
 
 func InstallNewModel(userModel string) {
@@ -61,3 +61,19 @@ func InstallNewModel(userModel string) {
 	}
 	fmt.Printf(string(msg))
 }
+func UseSelectedModel(selectedModel string) {
+	fmt.Printf("Selected model: '%s'\n", selectedModel)
+	cmd := exec.Command(util.Ollama, "run", selectedModel)
+	msg, err := cmd.Output()
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	print(string(msg))
+	//USE THE SERVICE TO RUN THE MODEL
+}
+
+func runModel(selectedModel string) {
+
+}
+
+//TODO:Implement the function to install a new model in the local ollama but the correct way
