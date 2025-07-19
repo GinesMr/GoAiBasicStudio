@@ -1,7 +1,6 @@
 package services
 
 import (
-	"bufio"
 	context2 "context"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
@@ -18,6 +17,13 @@ var Models []string
 
 type OllamaFoundMsg bool
 
+func StopModel(modelName string) {
+	cmd := exec.Command("ollama", "stop", modelName)
+	err := cmd.Run()
+	if err != nil {
+		fmt.Println("Error stopping model:", err)
+	}
+}
 func CheckOllamaInstall() bool {
 	cmd := exec.Command(util.Ollama, "--version")
 	msg, err := cmd.Output()
@@ -69,11 +75,14 @@ func InstallNewModel(userModel string) {
 	fmt.Printf(string(msg))
 }
 func UseSelectedModel(selectedModel string) {
-	RunModel(selectedModel)
+	RunModel(selectedModel, "")
 }
 
-func RunModel(selectedModel string) string {
-	bufio.NewReader(os.Stdin)
+func RunModel(selectedModel, userInput string) string {
+	content := []llms.MessageContent{
+		llms.TextParts(llms.ChatMessageTypeSystem),
+		llms.TextParts(llms.ChatMessageTypeHuman, userInput),
+	}
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 	llm, err := ollama.New(ollama.WithModel(selectedModel))
@@ -81,19 +90,21 @@ func RunModel(selectedModel string) string {
 		fmt.Println("Error initializing LLM:", err)
 		os.Exit(1)
 	}
-	content := []llms.MessageContent{
-		llms.TextParts(llms.ChatMessageTypeSystem),
-	}
-	cont := context2.Background()
+	ctx := context2.Background()
 	response := ""
-	input := "This is a test input" ///Change it
-	content = append(content, llms.TextParts(llms.ChatMessageTypeHuman, input))
-	llm.GenerateContent(cont, content, llms.WithMaxTokens(1024),
+	llm.GenerateContent(ctx, content,
+		llms.WithMaxTokens(1024),
 		llms.WithStreamingFunc(func(ctx context2.Context, chunk []byte) error {
 			fmt.Print(string(chunk))
-			response = response + string(chunk)
+			response += string(chunk)
 			return nil
-		}))
+		}),
+	)
+	if err != nil {
+		fmt.Println("Error generating content:", err)
+		return "Error: " + err.Error()
+	}
 	content = append(content, llms.TextParts(llms.ChatMessageTypeSystem, response))
+
 	return response
 }

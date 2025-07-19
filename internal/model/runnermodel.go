@@ -1,10 +1,12 @@
 package model
 
 import (
+	"fmt"
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/tmc/langchaingo/llms"
 	"goAiBasicStudio/internal/services"
+	"strings"
 )
 
 type Runner struct {
@@ -19,16 +21,23 @@ type RunModelMsg struct {
 	Message string
 }
 
-func (r Runner) runUsingModel() tea.Cmd {
+func stopModelCmd(modelName string) tea.Cmd {
 	return func() tea.Msg {
-		services.RunModel(r.modelName)
-		return RunModelMsg{}
+		services.StopModel(modelName)
+		return tea.Quit()
+	}
+}
+func (r Runner) runUsingModel(userInput string) tea.Cmd {
+	return func() tea.Msg {
+		response := services.RunModel(r.modelName, userInput)
+		return RunModelMsg{Message: response}
 	}
 }
 func NewRunnerModel(name string, model llms.Model) Runner {
 	ta := textarea.New()
 	ta.Placeholder = "Type something..."
 	ta.Focus()
+
 	return Runner{
 		input:     ta,
 		llm:       model,
@@ -43,16 +52,36 @@ func (x Runner) Init() tea.Cmd {
 }
 
 func (x Runner) Update(msg tea.Msg) (Runner, tea.Cmd) {
+	var cmd tea.Cmd
+	x.input, cmd = x.input.Update(msg)
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
-			return x, tea.Quit
+			return x, stopModelCmd(x.modelName)
+		case "enter":
+			if !x.loading && strings.TrimSpace(x.input.Value()) != "" {
+				inputText := x.input.Value()
+				x.chat = append(x.chat, "[You] "+inputText)
+				x.loading = true
+				x.input.SetValue("")
+				return x, x.runUsingModel(inputText)
+			}
 		}
-	case RunModelMsg:
-		return x, tea.Quit
-		//Create logic of the chat
 
+	case RunModelMsg:
+		x.chat = append(x.chat, "[AI] "+msg.Message)
+		x.loading = false
 	}
-	return x, nil
+
+	return x, cmd
+}
+func (r Runner) View() string {
+	output := strings.Join(r.chat, "\n")
+	return fmt.Sprintf(
+		"%s\n\n%s\n\n[Enter: send | q: exit]",
+		output,
+		r.input.View(),
+	)
 }

@@ -1,9 +1,8 @@
 package util
 
 var options = []string{
-	"Select model",
-	"View models",
 	"Install new model",
+	"Use models",
 	"Manual",
 }
 

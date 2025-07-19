@@ -74,7 +74,7 @@ func (m *home) Update(msg tea.Msg) (home, tea.Cmd) {
 		case "enter", " ":
 			if m.outputText == "" {
 				m.selected = m.cursor
-				if m.selected == 2 {
+				if m.selected == 0 {
 					return *m, func() tea.Msg {
 						return showModelListMsg{}
 					}
@@ -84,7 +84,7 @@ func (m *home) Update(msg tea.Msg) (home, tea.Cmd) {
 						return showModelLocalListMsg{}
 					}
 				}
-				if m.selected == 3 {
+				if m.selected == 2 {
 					md := util.Md
 					return *m, loadMarkdownCmd(md)
 				}

@@ -63,9 +63,9 @@ func (m newModelLocalList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "enter":
 			if selectedItem, ok := m.list.SelectedItem().(item); ok {
-				m.selected = selectedItem
-				services.UseSelectedModel(string(selectedItem))
-				return m, tea.Quit
+				return m, func() tea.Msg {
+					return modelSelectedMsg(selectedItem)
+				}
 			}
 		case "q":
 			return m, tea.Quit
