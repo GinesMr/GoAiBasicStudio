@@ -1,6 +1,6 @@
-# GoVI Basic Studio
+# GoAiBasicStudio
 
-**GoVI Basic Studio** is a terminal user interface (TUI) application built in Go using the BubbleTea framework. It provides a clean and responsive interface for running local LLMs (via Ollama) directly from your terminal, with support for model selection, contextual chat, and real-time streaming of model responses.
+**GoAiBasicStudio** is a terminal user interface (TUI) application built in Go using the BubbleTea framework. It provides a clean and responsive interface for running local LLMs (via Ollama) directly from your terminal, with support for model selection, contextual chat, and real-time streaming of model responses.
 
 This project is designed for developers who need a private, offline LLM experience without any external dependencies or telemetry.
 
@@ -8,7 +8,7 @@ This project is designed for developers who need a private, offline LLM experien
 
 ## Demo
 
-![GoVI Basic Studio Demo](docs/demo.gif)
+![GoAiBasicStudio](docs/demo.gif)
 
 ---
 
