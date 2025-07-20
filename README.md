@@ -8,7 +8,7 @@ This project is designed for developers who need a private, offline LLM experien
 
 ## Demo
 
-![GoAiBasicStudio](docs/demo.png)
+![GoAiBasicStudio](docs/demo.gif)
 
 ---
 
